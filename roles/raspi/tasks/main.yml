@@ -1,19 +1,19 @@
 - name: "raspi-config_Wait_for_Network_at_Boot"
   shell: raspi-config nonint do_boot_wait 0
   register: res
-- name: "デバッグ"
+- name: "result"
   debug: var=res.stdout_lines
 
 - name: "raspi-config_Set_Locale"
   shell: raspi-config nonint do_change_locale ja_JP.UTF-8
   register: res
-- name: "デバッグ"
+- name: "result"
   debug: var=res.stdout_lines
 
 - name: "raspi-config_Set_Timezone"
   shell: raspi-config nonint do_change_timezone Asia/Tokyo
   register: res
-- name: "デバッグ"
+- name: "result"
   debug: var=res.stdout_lines
 
 - name: "apt-get update"
@@ -35,8 +35,8 @@
     content: |
       if [ -d /etc/rc.local.d ]; then
         for i in /etc/rc.local.d/*; do
-          if [ -r \$i ]; then
-            . \$i
+          if [ -r $i ]; then
+            . $i
           fi
         done
         unset i
@@ -54,7 +54,7 @@
   copy:
     src: "{{item}}"
     dest: /home/pi/USBCopy/
-    mode: 0644
+    mode: 0755
   with_items:
     - usbcopy.py
     - usbcopy.sh
@@ -70,6 +70,7 @@
 - name: "udev設定"
   lineinfile:
     path: /etc/udev/rules.d/99-usbcomsetname.rules
+    create: yes
     line: "{{item}}"
   with_items:
     - 'SUBSYSTEM=="block",ENV{ID_BUS}=="usb",ENV{ID_PATH_TAG}=="platform-3f980000_usb-usb-0_1_1_2_1_0-scsi-0_0_0_0",SYMLINK+="usb_p2"'

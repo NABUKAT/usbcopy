@@ -4,7 +4,7 @@ cd /home/pi/USBCopy
 
 while :
 do
-   python usbcopy.py
+   python3 usbcopy.py
 done
 
 exit 0
