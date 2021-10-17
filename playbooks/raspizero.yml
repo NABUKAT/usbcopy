@@ -1,5 +1,0 @@
-- name: "raspizero設定"
-  hosts: raspizero
-  become: yes
-  roles:
-    - ../roles/raspizero

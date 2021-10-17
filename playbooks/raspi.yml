@@ -1,0 +1,5 @@
+- name: "raspi設定"
+  hosts: raspi
+  become: yes
+  roles:
+    - ../roles/raspi
