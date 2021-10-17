@@ -1,0 +1,103 @@
+- name: "raspi-config_Wait_for_Network_at_Boot"
+  shell: raspi-config nonint do_boot_wait 0
+  register: res
+- name: "デバッグ"
+  debug: var=res.stdout_lines
+
+- name: "raspi-config_Set_Locale"
+  shell: raspi-config nonint do_change_locale ja_JP.UTF-8
+  register: res
+- name: "デバッグ"
+  debug: var=res.stdout_lines
+
+- name: "raspi-config_Set_Timezone"
+  shell: raspi-config nonint do_change_timezone Asia/Tokyo
+  register: res
+- name: "デバッグ"
+  debug: var=res.stdout_lines
+
+- name: "apt-get update"
+  apt:
+    update_cache: yes
+
+- name: "apt-get install"
+  apt:
+    name:
+      - raspberrypi-kernel-headers
+      - autofs
+      - python3-dev
+      - python3-pip
+
+- name: "rc.local設定"
+  blockinfile:
+    dest: /etc/rc.local
+    insertbefore: "exit 0"
+    content: |
+      if [ -d /etc/rc.local.d ]; then
+        for i in /etc/rc.local.d/*; do
+          if [ -r \$i ]; then
+            . \$i
+          fi
+        done
+        unset i
+      fi
+
+- name: "ディレクトリ「/home/pi/USBCopy」作成"
+  file:
+    path: /home/pi/USBCopy
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "スクリプトインストール(1/2)"
+  copy:
+    src: "{{item}}"
+    dest: /home/pi/USBCopy/
+    mode: 0644
+  with_items:
+    - usbcopy.py
+    - usbcopy.sh
+
+- name: "スクリプトインストール(2/2)"
+  copy:
+    src: "{{item}}"
+    dest: /etc/rc.local.d/
+    mode: 0644
+  with_items:
+    - usbcopy
+
+- name: "udev設定"
+  lineinfile:
+    path: /etc/udev/rules.d/99-usbcomsetname.rules
+    line: "{{item}}"
+  with_items:
+    - 'SUBSYSTEM=="block",ENV{ID_BUS}=="usb",ENV{ID_PATH_TAG}=="platform-3f980000_usb-usb-0_1_1_2_1_0-scsi-0_0_0_0",SYMLINK+="usb_p2"'
+    - 'SUBSYSTEM=="block",ENV{ID_BUS}=="usb",ENV{ID_PATH_TAG}=="platform-3f980000_usb-usb-0_1_1_3_1_0-scsi-0_0_0_0",SYMLINK+="usb_p3"'
+    - 'SUBSYSTEM=="block",ENV{ID_BUS}=="usb",ENV{ID_PATH_TAG}=="platform-3f980000_usb-usb-0_1_3_1_0-scsi-0_0_0_0",SYMLINK+="usb_p4"'
+    - 'SUBSYSTEM=="block",ENV{ID_BUS}=="usb",ENV{ID_PATH_TAG}=="platform-3f980000_usb-usb-0_1_2_1_0-scsi-0_0_0_0",SYMLINK+="usb_p5"'
+
+- name: "autofs設定(1/2)"
+  lineinfile:
+    path: /etc/auto.master
+    line: "{{item}}"
+  with_items:
+    - "/misc /etc/auto.misc"
+
+- name: "autofs設定(2/2)"
+  lineinfile:
+    path: /etc/auto.misc
+    line: "{{item}}"
+  with_items:
+    - "p2 -fstype=auto,rw :/dev/usb_p2"
+    - "p3 -fstype=auto,rw :/dev/usb_p3"
+    - "p4 -fstype=auto,rw :/dev/usb_p4"
+    - "p5 -fstype=auto,rw :/dev/usb_p5"
+
+- name: "pyudevインストール"
+  shell: "pip3 install pyudev"
+  args:
+    chdir: /opt
+  register: res
+- name: "デバッグ"
+  debug: var=res.stdout_lines
