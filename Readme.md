@@ -1,3 +1,5 @@
+### What's this
+It is a USB memory copier that works with Raspberry Pi.
 ### Install
 sudo apt-get -y install git python-pip libffi-dev libssl-dev  
 sudo pip install ansible  
