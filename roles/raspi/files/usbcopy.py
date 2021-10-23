@@ -85,6 +85,13 @@ def usbcopy(from_path, to_path):
         time.sleep(0.5)
     subprocess.run(led_on, shell=True)
 
+    # コピー先USBのエラーチェック
+    if to_path == "misc/p4":
+        to_dev = "/dev/usb_p4"
+    elif to_path == "/misc/p5/":
+        to_dev = "/dev/usb_p5"
+    com = "umount " + to_path + " && fsck.vfat -a " + to_dev
+    res = subprocess.run(com, shell=True)
     # コピー開始
     logger.info("コピーを開始します。")
     com = "rsync -r --no-owner --no-group --delete " + from_path + " " + to_path
