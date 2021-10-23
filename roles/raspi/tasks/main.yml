@@ -90,10 +90,10 @@
     path: /etc/auto.misc
     line: "{{item}}"
   with_items:
-    - "p2 -fstype=auto,rw :/dev/usb_p2"
-    - "p3 -fstype=auto,rw :/dev/usb_p3"
-    - "p4 -fstype=auto,rw :/dev/usb_p4"
-    - "p5 -fstype=auto,rw :/dev/usb_p5"
+    - "p2 -fstype=vfat,rw :/dev/usb_p2"
+    - "p3 -fstype=vfat,rw :/dev/usb_p3"
+    - "p4 -fstype=vfat,rw :/dev/usb_p4"
+    - "p5 -fstype=vfat,rw :/dev/usb_p5"
 
 - name: "pyudevインストール"
   shell: "pip3 install pyudev"
